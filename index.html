@@ -1,0 +1,530 @@
+http://localhost:4173/index.htmlhttp://localhost:4173/index.html<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>ตี๋นับยอด</title>
+<link rel="icon" href="assets/tien-nub-yod.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: one monthly report sheet. Each row is a number with minus/plus buttons and a side tab that opens a number wheel. */
+:root {
+  --bg: #f1f2ec;
+  --surface: #fafaf6;
+  --fg: #1c2118;
+  --muted: #5b6354;
+  --line: #d8dbcd;
+  --accent: #3b5a2c;
+  --accent-fg: #f5f8ee;
+  --accent-soft: #e3ecd8;
+  --crit: #a8231b;
+  --crit-soft: #f6dfdb;
+  --warn: #8f5600;
+  --font-text: "IBM Plex Sans Thai", "Sarabun", Tahoma, "Noto Sans Thai", sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12150f; --surface: #1b1f16; --fg: #e8ebe0; --muted: #9aa28f; --line: #2e3427;
+    --accent: #9cc487; --accent-fg: #14200d; --accent-soft: #26331f;
+    --crit: #ff9a90; --crit-soft: #3a1f1c; --warn: #f0be6a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12150f; --surface: #1b1f16; --fg: #e8ebe0; --muted: #9aa28f; --line: #2e3427;
+  --accent: #9cc487; --accent-fg: #14200d; --accent-soft: #26331f;
+  --crit: #ff9a90; --crit-soft: #3a1f1c; --warn: #f0be6a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-text); font-size: 16px; line-height: 1.55;
+  padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background-image:
+    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--accent-soft) 72%, transparent) 0 3px, transparent 4px),
+    radial-gradient(circle at 88% 30%, color-mix(in srgb, var(--warn) 15%, transparent) 0 2px, transparent 3px),
+    linear-gradient(135deg, transparent 48%, color-mix(in srgb, var(--line) 45%, transparent) 49%, transparent 50%);
+  background-size: 34px 34px, 48px 48px, 80px 80px;
+}
+.wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+h1 { font-size: 1.5rem; line-height: 1.25; margin: 0; font-weight: 700; }
+h2 { font-size: 1.2rem; margin: 0; font-weight: 600; }
+p { margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: flex-end; justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark { position: relative; width: 74px; height: 58px; flex: 0 0 auto; }
+.brand-mark img { width: 58px; height: 58px; object-fit: contain; filter: drop-shadow(0 3px 2px rgba(0,0,0,.12)); }
+.brand-mark::before, .brand-mark::after {
+  position: absolute; z-index: 2; font-size: 1.15rem; font-weight: 800; filter: drop-shadow(0 2px 0 var(--surface));
+}
+.brand-mark::before { content: "★"; left: 0; top: -8px; color: #e8a82d; transform: rotate(-12deg); }
+.brand-mark::after { content: "♥"; right: 0; bottom: -5px; color: #cf4d66; transform: rotate(14deg); }
+.sticker-row { display: flex; justify-content: center; gap: 12px; margin: -4px 0 0; }
+.face-sticker {
+  position: relative; width: 82px; height: 82px; border: 3px solid var(--surface); border-radius: 46% 54% 48% 52%;
+  background: #f9dfbd; box-shadow: 0 4px 12px rgba(32, 38, 24, .12); overflow: hidden;
+}
+.face-sticker::before { content: ""; position: absolute; left: 12px; right: 12px; top: 22px; height: 7px; border-radius: 50%; border-top: 3px solid #3a3028; }
+.face-sticker::after { content: "●   ●"; position: absolute; left: 0; right: 0; top: 31px; text-align: center; color: #302820; font-size: 12px; letter-spacing: 12px; }
+.face-sticker.thai { background: linear-gradient(145deg, #fff0c9, #f1bd72); }
+.face-sticker.thai .hair { position: absolute; inset: -6px -4px auto; height: 34px; background: #24251f; border-radius: 50% 50% 44% 44%; clip-path: polygon(0 0,100% 0,100% 58%,82% 42%,72% 74%,58% 38%,43% 72%,27% 38%,12% 64%,0 46%); }
+.face-sticker.chinese { background: linear-gradient(145deg, #ffd9a8, #f4ad87); }
+.face-sticker.chinese .hair { position: absolute; left: 7px; right: 7px; top: -8px; height: 35px; background: #171713; border-radius: 50%; }
+.face-sticker.japanese { background: linear-gradient(145deg, #ffe6d5, #f1bcaa); }
+.face-sticker.japanese .hair { position: absolute; left: -6px; right: -6px; top: -12px; height: 39px; background: #3b2d29; border-radius: 55% 55% 42% 42%; clip-path: polygon(0 0,100% 0,100% 70%,86% 48%,76% 100%,64% 52%,49% 88%,35% 48%,18% 92%,7% 50%,0 74%); }
+.face-mouth { position: absolute; z-index: 3; left: 50%; top: 54px; width: 18px; height: 9px; border-bottom: 3px solid #9a4d55; border-radius: 50%; transform: translateX(-50%); }
+.face-cheek { position: absolute; z-index: 3; left: 10px; bottom: 21px; width: 10px; height: 6px; border-radius: 50%; background: #e98e96; box-shadow: 52px 0 #e98e96; opacity: .75; }
+.head .date { color: var(--muted); font-size: .9rem; }
+.role { font-size: .8rem; font-weight: 600; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--muted); }
+.role.on { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.banner { padding: 10px 14px; border-radius: 10px; font-size: .95rem; background: var(--surface); color: var(--muted); border: 1px solid var(--line); }
+
+.btn { min-height: 44px; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-weight: 500; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.btn.small { min-height: 40px; padding: 4px 12px; font-size: .95rem; }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+.warnline { color: var(--warn); font-size: .9rem; }
+.crit { color: var(--crit); }
+
+.empty { padding: 18px; border: 1px dashed var(--line); border-radius: 10px; color: var(--muted); text-align: center; }
+
+.report { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.rtitle { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.rtitle h2 { margin-right: auto; }
+.rtitle .sel { display: flex; align-items: center; gap: 8px; }
+.rtitle select { min-height: 40px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.livebadge { font-size: .8rem; color: var(--muted); }
+
+.srows { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.srow { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); min-width: 0; overflow: hidden; }
+.srow.base { border-color: var(--fg); }
+.srow.remain { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.srow.remain.neg { background: var(--crit); border-color: var(--crit); color: var(--surface); }
+.shead { display: grid; grid-template-columns: minmax(0, 1fr) 44px minmax(56px, auto) 44px 40px; align-items: center; gap: 4px; padding: 4px 0 4px 12px; }
+.srow.remain .shead { grid-template-columns: minmax(0, 1fr) auto; padding: 8px 14px; }
+.sl { font-weight: 600; overflow-wrap: anywhere; }
+.ssection { padding: 8px 12px 2px; color: var(--muted); font-size: .9rem; font-weight: 700; }
+.snote { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.snote b { display: block; margin-bottom: 2px; }
+.step { width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-size: 1.5rem; line-height: 1; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; display: flex; align-items: center; justify-content: center; padding: 0; }
+.step:active { background: var(--accent-soft); }
+.step[disabled] { opacity: .4; cursor: not-allowed; }
+.numbtn { min-height: 44px; border: 0; background: none; cursor: pointer; text-align: center; padding: 0 4px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.numbtn b, .numfix b { font-family: var(--font-num); font-size: 1.45rem; font-weight: 600; }
+.numbtn small, .numfix small { color: var(--muted); font-size: .8rem; }
+.numfix { text-align: right; white-space: nowrap; }
+.srow.remain .numfix small { color: inherit; opacity: .85; }
+.stab { align-self: stretch; min-height: 52px; display: flex; align-items: center; justify-content: center; border: 0; border-left: 1px solid var(--line); background: var(--surface); color: var(--fg); font-size: 1.3rem; cursor: pointer; padding: 0; }
+.srow.open .stab { background: var(--accent); color: var(--accent-fg); transform: rotate(90deg); }
+@media (prefers-reduced-motion: no-preference) { .stab { transition: transform .15s; } }
+
+.spanel { padding: 12px 14px 14px; border-top: 1px dashed var(--line); background: var(--surface); color: var(--fg); display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; justify-content: center; }
+.wheelbox { position: relative; width: 140px; height: 176px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); overflow: hidden; }
+.wheel { height: 100%; overflow-y: auto; scroll-snap-type: y mandatory; padding: 66px 0; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.wheel::-webkit-scrollbar { display: none; }
+.wi { height: 44px; display: flex; align-items: center; justify-content: center; scroll-snap-align: center; font-family: var(--font-num); font-size: 1.4rem; font-variant-numeric: tabular-nums; color: var(--muted); cursor: pointer; user-select: none; -webkit-user-select: none; }
+.wi.on { color: var(--fg); font-weight: 600; }
+.wband { position: absolute; left: 6px; right: 6px; top: 66px; height: 44px; border-top: 2px solid var(--accent); border-bottom: 2px solid var(--accent); pointer-events: none; }
+.quick { display: grid; grid-template-columns: repeat(2, 64px); gap: 8px; }
+.quick .btn { min-height: 44px; padding: 4px; font-family: var(--font-num); font-weight: 600; }
+.hint { flex-basis: 100%; text-align: center; font-size: .8rem; color: var(--muted); }
+
+.rnote { font-size: .85rem; color: var(--muted); }
+.sign { border-top: 1px solid var(--line); padding-top: 14px; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; text-align: center; }
+.sign .okline { align-self: stretch; text-align: left; font-weight: 600; }
+.sign .sig { width: min(280px, 100%); display: flex; flex-direction: column; gap: 2px; }
+.sign .signame { min-height: 1.8em; border-bottom: 1px dotted var(--muted); padding: 0 6px; font-weight: 600; overflow-wrap: anywhere; }
+.sign .signctl { align-self: stretch; display: flex; gap: 8px; flex-wrap: wrap; }
+.sign .signctl input { flex: 1 1 200px; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); width: auto; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: .92rem; max-width: calc(100% - 32px); z-index: 20; }
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><img src="assets/tien-nub-yod.svg" alt=""></div>
+      <div>
+      <h1>ตี๋นับยอด</h1>
+      <div class="date" id="today"></div>
+      </div>
+    </div>
+    <span class="role" id="role">กำลังโหลด</span>
+  </header>
+
+  <div class="banner" id="sysnote" hidden></div>
+  <div class="sticker-row" aria-label="สติกเกอร์ตัวการ์ตูนไทย จีน และญี่ปุ่น">
+    <div class="face-sticker thai" title="สไตล์ไทย"><div class="hair"></div><div class="face-mouth"></div><div class="face-cheek"></div></div>
+    <div class="face-sticker chinese" title="สไตล์จีน"><div class="hair"></div><div class="face-mouth"></div><div class="face-cheek"></div></div>
+    <div class="face-sticker japanese" title="สไตล์ญี่ปุ่น"><div class="hair"></div><div class="face-mouth"></div><div class="face-cheek"></div></div>
+  </div>
+
+  <section class="report" aria-label="ยอดพลทหาร">
+    <div class="rtitle">
+      <h2>รายงานยอด</h2>
+      <div class="sel">
+        <label for="m-sel">เดือน</label><select id="m-sel"></select>
+        <label for="y-sel">พ.ศ.</label><select id="y-sel"></select>
+      </div>
+    </div>
+    <div class="livebadge" id="livebadge"></div>
+    <div id="body"></div>
+  </section>
+</div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var esc = function (s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  };
+  var MONTHS = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+  var MAXV = 999, ITEM = 44;
+
+  /* Rows in the order of the form. Calculated rows are handled separately. */
+  var ROWS = [
+    { k: 'base', label: 'ยอดเดิม' },
+    { k: 'section-disch', label: 'จำหน่าย', section: true },
+    { k: 'leave', label: 'ลา' },
+    { k: 'absent', label: 'ขาด' },
+    { k: 'sick', label: 'ป่วย' },
+    { k: 'punish', label: 'โทษ' },
+    { k: 'project', label: 'โครงการ' },
+    { k: 'regular', label: 'ประจำตัว' },
+    { k: 'acting', label: 'รักษาการณ์' },
+    { k: 'other', label: 'อื่นๆ' },
+    { k: 'disch', label: 'รวมจำหน่าย', calc: true, sum: true },
+    { k: 'present', label: 'ยอดรับประทาน', calc: true },
+    { k: 'note', label: 'หมายเหตุ', note: true }
+  ];
+  var INPUTS = ROWS.filter(function (r) { return !r.calc && !r.section; });
+  var AWAY = INPUTS.filter(function (r) { return r.k !== 'base'; });
+  var LABEL = {}; ROWS.forEach(function (r) { LABEL[r.k] = r.label; });
+
+  var db = null, canUse = true;
+  var docs = {}, edits = {}, known = {};
+  var ui = { open: {}, draft: {}, wheelBusy: false, dirty: false, progUntil: 0 };
+
+  var now = new Date();
+  function ymKey(y, m) { return y + '-' + (m < 10 ? '0' + m : m); }
+  var curKey = ymKey(now.getFullYear(), now.getMonth() + 1);
+  ui.m = now.getMonth() + 1; ui.y = now.getFullYear();
+  function key() { return ymKey(ui.y, ui.m); }
+
+  function clamp(v) { v = Math.round(Number(v) || 0); return Math.max(0, Math.min(MAXV, v)); }
+  function val(k, ym) {
+    ym = ym || key();
+    if (edits[ym] && Object.prototype.hasOwnProperty.call(edits[ym], k)) return edits[ym][k];
+    var d = docs[ym];
+    return clamp(d && d[k]);
+  }
+  function awaySum(ym) { return AWAY.reduce(function (s, r) { return s + val(r.k, ym); }, 0); }
+  function remain(ym) { return val('base', ym) - awaySum(ym); }
+
+  function dt(ts) {
+    try { return new Date(ts).toLocaleString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; }
+  }
+  function toast(msg) {
+    var t = $('#toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toast._t); toast._t = setTimeout(function () { t.hidden = true; }, 3200);
+  }
+  function fail(e) {
+    toast(e && e.code === 'invalid_argument' ? 'บัญชีนี้ไม่มีสิทธิ์แก้ตัวเลข ขอสิทธิ์ Contributor หรือ Editor ในเมนู Share' : 'บันทึกไม่สำเร็จ ลองอีกครั้ง');
+    if (window.console) console.warn(e);
+  }
+  try { $('#today').textContent = now.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) {}
+  try { ui.draft['sign-name'] = localStorage.getItem('strength-nco') || ''; } catch (e) { ui.draft['sign-name'] = ''; }
+
+  $('#m-sel').innerHTML = MONTHS.map(function (n, i) { return '<option value="' + (i + 1) + '">' + n + '</option>'; }).join('');
+  (function () {
+    var ys = [];
+    for (var y = now.getFullYear() - 3; y <= now.getFullYear() + 1; y++) ys.push(y);
+    $('#y-sel').innerHTML = ys.map(function (y) { return '<option value="' + y + '">' + (y + 543) + '</option>'; }).join('');
+  })();
+
+  /* ---------- saving: edits show at once, then are written in one batch ---------- */
+  var chain = Promise.resolve(), flushT = null;
+  function setVal(k, v) {
+    var ym = key();
+    v = clamp(v);
+    if (val(k, ym) === v) return;
+    edits[ym] = edits[ym] || {};
+    edits[ym][k] = v;
+    clearTimeout(flushT); flushT = setTimeout(flushNow, 350);
+    render();
+  }
+  async function writeDoc(ym, patch) {
+    var ref = db.doc('counts/' + ym);
+    if (docs[ym] || known[ym]) await ref.update(patch);
+    else { await ref.set(Object.assign({ ym: ym }, patch)); known[ym] = true; }
+  }
+  function flushNow() {
+    clearTimeout(flushT);
+    var success = true;
+    chain = chain.then(async function () {
+      if (!db) return success;
+      var yms = Object.keys(edits);
+      for (var i = 0; i < yms.length; i++) {
+        var ym = yms[i], patch = Object.assign({}, edits[ym]);
+        if (!Object.keys(patch).length) continue;
+        try { await writeDoc(ym, patch); }
+        catch (e) {
+          success = false;
+          Object.keys(patch).forEach(function (k) { if (edits[ym] && edits[ym][k] === patch[k]) delete edits[ym][k]; });
+          fail(e); render();
+        }
+      }
+      pruneEdits();
+      render();
+      return success;
+    });
+    return chain;
+  }
+  function pruneEdits() {
+    Object.keys(edits).forEach(function (ym) {
+      Object.keys(edits[ym]).forEach(function (k) {
+        if (docs[ym] && clamp(docs[ym][k]) === edits[ym][k]) delete edits[ym][k];
+      });
+      if (!Object.keys(edits[ym]).length) delete edits[ym];
+    });
+  }
+
+  async function signReport() {
+    var name = (ui.draft['sign-name'] || '').trim();
+    if (!name) { toast('พิมพ์ยศและชื่อสิบเวรก่อนตรวจ'); return; }
+    var ym = key(), signed = {};
+    INPUTS.forEach(function (r) { signed[r.k] = val(r.k, ym); });
+    signed.present = remain(ym);
+    try {
+      var saved = await flushNow();
+      if (!saved) return;
+      await writeDoc(ym, { by: name, at: Date.now(), signed: signed });
+      try { localStorage.setItem('strength-nco', name); } catch (e) {}
+      pruneEdits();
+      render();
+      toast('บันทึกยอดที่ตรวจแล้ว');
+    } catch (e) { fail(e); }
+  }
+
+  async function saveReport() {
+    if (!db) { toast('ยังเชื่อมต่อข้อมูลไม่ได้'); return; }
+    try {
+      var saved = await flushNow();
+      if (saved) toast('บันทึกยอดเรียบร้อย อัปเดตข้อมูลแล้ว');
+    } catch (e) { fail(e); }
+  }
+
+  /* ---------- drawing ---------- */
+  function wheelHtml(k) {
+    var v = val(k), h = '';
+    for (var i = 0; i <= MAXV; i++) h += '<div class="wi' + (i === v ? ' on' : '') + '" data-v="' + i + '">' + i + '</div>';
+    return '<div class="wheelbox"><div class="wheel" data-k="' + k + '" data-v="' + v + '" aria-label="เลื่อนเลือกจำนวน ' + esc(LABEL[k]) + '">' + h + '</div><div class="wband"></div></div>';
+  }
+
+  function rowHtml(r) {
+    if (r.section) return '<div class="ssection">' + esc(r.label) + '</div>';
+    if (r.note) return '<div class="snote"><b>' + esc(r.label) + '</b><span class="rnote">—</span></div>';
+    var v = r.calc ? (r.sum ? awaySum(key()) : remain(key())) : val(r.k), open = !!ui.open[r.k];
+    if (r.calc) {
+      return '<div class="srow remain' + (v < 0 ? ' neg' : '') + '"><div class="shead"><span class="sl">' + esc(r.label) + '</span>' +
+        '<span class="numfix"><b>' + v + '</b> <small>นาย</small></span></div></div>';
+    }
+    var dis = canUse ? '' : ' disabled';
+    var h = '<div class="srow' + (r.k === 'base' ? ' base' : '') + (open ? ' open' : '') + '"><div class="shead">' +
+      '<span class="sl">' + esc(r.label) + '</span>' +
+      '<button type="button" class="step" data-step="-1" data-k="' + r.k + '" aria-label="ลด' + esc(r.label) + '"' + dis + '>−</button>' +
+      '<button type="button" class="numbtn" data-tog="' + r.k + '" aria-label="เปิดวงล้อตัวเลข ' + esc(r.label) + '"><b>' + v + '</b> <small>นาย</small></button>' +
+      '<button type="button" class="step" data-step="1" data-k="' + r.k + '" aria-label="เพิ่ม' + esc(r.label) + '"' + dis + '>+</button>' +
+      '<button type="button" class="stab" data-tog="' + r.k + '" aria-expanded="' + open + '" aria-label="แถบเลือกจำนวน ' + esc(r.label) + '">›</button></div>';
+    if (open) {
+      h += '<div class="spanel">' + wheelHtml(r.k) +
+        (canUse ? '<div class="quick">' +
+          '<button type="button" class="btn" data-q="-10" data-k="' + r.k + '">−10</button><button type="button" class="btn" data-q="10" data-k="' + r.k + '">+10</button>' +
+          '<button type="button" class="btn" data-q="-5" data-k="' + r.k + '">−5</button><button type="button" class="btn" data-q="5" data-k="' + r.k + '">+5</button></div>' : '') +
+        '<div class="hint">เลื่อนวงล้อ หรือแตะตัวเลขที่ต้องการ</div></div>';
+    }
+    return h + '</div>';
+  }
+
+  function render() {
+    if (ui.wheelBusy) { ui.dirty = true; return; }
+    ui.dirty = false;
+    var a = document.activeElement, aid = a && a.id, s = a && a.selectionStart, e = a && a.selectionEnd;
+    var ym = key(), live = ym === curKey, d = docs[ym];
+    var r = $('#role');
+    r.textContent = !db ? 'ออฟไลน์' : (canUse ? 'แก้ไขได้' : 'ดูอย่างเดียว');
+    r.className = 'role' + (db && canUse ? ' on' : '');
+    $('#m-sel').value = String(ui.m);
+    $('#y-sel').value = String(ui.y);
+    var pending = edits[ym] && Object.keys(edits[ym]).length > 0;
+    $('#livebadge').textContent = (live ? 'เดือนปัจจุบัน กดบวกลบ หรือกดตัวเลขเพื่อเลื่อนวงล้อ ยอดรับประทานคำนวณให้เอง' : 'เดือนที่เลือกไม่ใช่เดือนปัจจุบัน แก้ไขย้อนหลังหรือล่วงหน้าได้') +
+      (pending ? ' • มีรายการรอการบันทึก' : ' • บันทึกแล้ว');
+
+    var rows = ROWS.map(rowHtml).join('');
+    var rem = remain(ym), sign = '<div class="sign"><div class="okline">ตรวจถูกต้อง</div>';
+    if (canUse && db) {
+      var changed = false;
+      if (d && d.signed) changed = INPUTS.some(function (x) { return clamp(d.signed[x.k]) !== val(x.k, ym); });
+      sign += '<div class="signctl"><input type="text" id="sign-name" data-draft maxlength="60" aria-label="ชื่อสิบเวร" placeholder="ยศ ชื่อ สิบเวร" value="' + esc(ui.draft['sign-name'] || '') + '">' +
+        '<button class="btn" type="button" data-act="save">บันทึกยอด</button>' +
+        '<button class="btn primary" type="button" data-act="sign">อัปเดตและตรวจถูกต้อง</button></div>';
+      if (changed) sign += '<p class="warnline" style="align-self:stretch;text-align:left">ตัวเลขเปลี่ยนไปหลังตรวจครั้งล่าสุด กดตรวจอีกครั้ง</p>';
+    }
+    sign += '<div class="sig"><div class="signame">' + (d && d.by ? esc(d.by) : '') + '</div><div>สิบเวรฯ</div></div>';
+    sign += '<p class="rnote" style="align-self:stretch;text-align:left">' + (d && d.at ? 'ตรวจเมื่อ ' + esc(dt(d.at)) : 'ยังไม่ได้ตรวจยอดเดือนนี้') + '</p></div>';
+
+    $('#body').innerHTML = '<div class="srows">' + rows + '</div>' +
+      (rem < 0 ? '<p class="warnline crit">รวมจำหน่ายเกินยอดเดิม ' + (-rem) + ' นาย ตรวจตัวเลขอีกครั้ง</p>' : '') + sign;
+
+    ui.progUntil = Date.now() + 200;
+    document.querySelectorAll('.wheel').forEach(function (w) { w.scrollTop = parseInt(w.getAttribute('data-v'), 10) * ITEM; });
+    if (aid) {
+      var n = document.getElementById(aid);
+      if (n && n !== document.activeElement && n.hasAttribute('data-draft')) {
+        n.focus();
+        try { n.setSelectionRange(s, e); } catch (x) {}
+      }
+    }
+  }
+
+  /* ---------- input: hold + or − to keep counting ---------- */
+  var hold = { t: null, i: null };
+  function stopHold() { clearTimeout(hold.t); clearInterval(hold.i); hold.t = hold.i = null; }
+  document.addEventListener('pointerdown', function (ev) {
+    var b = ev.target.closest && ev.target.closest('[data-step]');
+    if (!b || b.disabled) return;
+    var k = b.getAttribute('data-k'), dir = parseInt(b.getAttribute('data-step'), 10);
+    stopHold();
+    setVal(k, val(k) + dir);
+    hold.t = setTimeout(function () { hold.i = setInterval(function () { setVal(k, val(k) + dir); }, 90); }, 450);
+  });
+  ['pointerup', 'pointercancel', 'blur'].forEach(function (n) { (n === 'blur' ? window : document).addEventListener(n, stopHold); });
+  document.addEventListener('contextmenu', function (ev) { if (ev.target.closest && ev.target.closest('.step')) ev.preventDefault(); });
+
+  document.addEventListener('click', function (ev) {
+    var st = ev.target.closest && ev.target.closest('[data-step]');
+    if (st) { if (ev.detail === 0 && !st.disabled) setVal(st.getAttribute('data-k'), val(st.getAttribute('data-k')) + parseInt(st.getAttribute('data-step'), 10)); return; }
+    var q = ev.target.closest && ev.target.closest('[data-q]');
+    if (q) { var kk = q.getAttribute('data-k'); setVal(kk, val(kk) + parseInt(q.getAttribute('data-q'), 10)); return; }
+    var tg = ev.target.closest && ev.target.closest('[data-tog]');
+    if (tg) { var k = tg.getAttribute('data-tog'); ui.open[k] = !ui.open[k]; render(); return; }
+    var wi = ev.target.closest && ev.target.closest('.wi');
+    if (wi) {
+      var w = wi.parentNode, v = parseInt(wi.getAttribute('data-v'), 10);
+      if (w && w.scrollTo) w.scrollTo({ top: v * ITEM, behavior: 'smooth' });
+      else w.scrollTop = v * ITEM;
+      return;
+    }
+    var b = ev.target.closest && ev.target.closest('[data-act]');
+    if (b && db) {
+      if (b.getAttribute('data-act') === 'save') saveReport();
+      if (b.getAttribute('data-act') === 'sign') signReport();
+    }
+  });
+
+  /* wheel: the value is read once scrolling stops */
+  document.addEventListener('scroll', function (ev) {
+    var w = ev.target;
+    if (!w || !w.classList || !w.classList.contains('wheel')) return;
+    if (Date.now() < ui.progUntil) return;
+    ui.wheelBusy = true;
+    clearTimeout(ui.wt);
+    ui.wt = setTimeout(function () {
+      ui.wheelBusy = false;
+      var k = w.getAttribute('data-k'), v = clamp(Math.round(w.scrollTop / ITEM));
+      if (v !== val(k)) setVal(k, v);
+      else if (ui.dirty) render();
+    }, 140);
+  }, true);
+
+  document.addEventListener('change', function (ev) {
+    var t = ev.target;
+    if (t.id === 'm-sel') { ui.m = parseInt(t.value, 10); ui.open = {}; render(); }
+    else if (t.id === 'y-sel') { ui.y = parseInt(t.value, 10); ui.open = {}; render(); }
+  });
+  document.addEventListener('input', function (ev) {
+    var t = ev.target;
+    if (t.id && t.hasAttribute && t.hasAttribute('data-draft')) ui.draft[t.id] = t.value;
+  });
+
+  /* ---------- data ---------- */
+  var loadTimer = setTimeout(function () {
+    var n = $('#sysnote'); n.textContent = 'ยังเชื่อมต่อข้อมูลไม่ได้ ตัวเลขที่เห็นอาจไม่ล่าสุด'; n.hidden = false;
+  }, 10000);
+
+  async function start() {
+    var listeners = [];
+    var storageKey = 'strength-counts';
+    function readStore() {
+      try { return JSON.parse(localStorage.getItem(storageKey) || '{}'); }
+      catch (e) { return {}; }
+    }
+    function writeStore(next) {
+      localStorage.setItem(storageKey, JSON.stringify(next));
+      listeners.forEach(function (listener) {
+        listener({
+          docs: Object.keys(next).map(function (id) {
+            return { id: id, data: function () { return next[id]; } };
+          }),
+          metadata: { fromCache: false }
+        });
+      });
+    }
+
+    db = {
+      doc: function (path) {
+        var id = path.split('/')[1];
+        return {
+          update: async function (patch) {
+            var next = readStore();
+            next[id] = Object.assign({}, next[id] || {}, patch);
+            writeStore(next);
+          },
+          set: async function (data) {
+            var next = readStore();
+            next[id] = Object.assign({}, data);
+            writeStore(next);
+          }
+        };
+      },
+      collection: function () {
+        return {
+          onSnapshot: function (success) {
+            listeners.push(success);
+            success({
+              docs: Object.keys(readStore()).map(function (id) {
+                var data = readStore()[id];
+                return { id: id, data: function () { return data; } };
+              }),
+              metadata: { fromCache: false }
+            });
+          }
+        };
+      }
+    };
+    clearTimeout(loadTimer);
+    $('#sysnote').hidden = true;
+    canUse = true;
+    db.collection('counts').onSnapshot(function (snapshot) {
+      snapshot.docs.forEach(function (doc) {
+        docs[doc.id] = doc.data();
+        known[doc.id] = true;
+      });
+      pruneEdits();
+      render();
+    });
+    render();
+  }
+
+  render();
+  start();
+})();
+</script>
+
+</body></html>

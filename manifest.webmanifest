@@ -1,0 +1,16 @@
+{
+  "name": "ตี๋นับยอด",
+  "short_name": "ตี๋นับยอด",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f1f2ec",
+  "theme_color": "#3b5a2c",
+  "icons": [
+    {
+      "src": "assets/tien-nub-yod.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
